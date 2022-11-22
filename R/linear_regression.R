@@ -2,8 +2,8 @@ linear_regression <- function(X,
                               Y,
                               intercept = T) {
   ## Build matrixes
-  Y <- as.matrix(y)
-  X <- as.matrix(x)
+  Y <- as.matrix(Y)
+  X <- as.matrix(X)
   ## Dimensions of X
   n <- nrow(X)
   p <- ncol(X)
