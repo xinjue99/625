@@ -13,37 +13,41 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-
+Some R packages that need to setup. The first one called "linreg" is my package.
+The package consists of some useful methods in linear regression to get significant statistics.
+It mainly includes these statistics for people to analyze a model:
+1. Standard error; 
+2. R_squared value; 
+3. t-statistics;
+4. p-value; 
+5. Estimation of coefficients
 ```{r setup}
 library(linreg)
-library(ggplot2)
+library(tidyr)
 library(car)
+library(bench)
 ```
 ##Function usage Tutorial
+Here are the details of the use of my method in package:
 ```{r}
 ## Import data set to examine
+## I use the data set of mtcars to demonstrate how to use the package in detail:
 dt <- mtcars
 ```
 
 ```{r}
 ## Multiple linear regression with intercept
-## We choose "cyl", "disp" in mtcars as predictor X, and "mpg" as responsen Y.
-model_car <- linear_regression(X = dt$mpg,
+## I choose "cyl", "disp" in mtcars as predictor X, and "mpg" as responsen Y.
+model_car <- linear_regression(X = dt[,c(2,3)],
                               Y = dt$mpg
                               )
 ```
 
-```{r}
-## Calculate useful residuals. From the left to right, they are Residual, Std_Residual, and Studentized_Residual.
-head(model_residuals(model_car))
-```
-```{r}
-## All three sum of squares of the linear regression model
-ssmodel(model_car)
-```
+
 
 ```{r}
-model_lm <- lm(data = mc, formula = mpg~cyl+disp+hp)
+##The summary of the model
+model_lm <- lm(data = dt, formula = mpg~cyl+disp)
 summary(model_lm)
 ```
 
@@ -55,65 +59,42 @@ anova(model_lm)
 
 ```{r}
 ### Simulate data
-set.seed(777)
+set.seed(800)
 #Generate the independent variable and the error
-x1=rnorm(50000,100,16)
-x2=rnorm(50000,200,36)
-error=rnorm(50000,0,25)
-#Generate the dependent variable (b0=150, b1=-4, b2=2.5)
-y1=200-(5*x1)+(10*x2)+error
+x1=rnorm(10000,100,14)
+x2=rnorm(10000,200,34)
+error=rnorm(10000,0,24)
+#Generate the dependent variable
+y1=100-(4*x1)+(8*x2)+error
 testdata <- as.data.frame(cbind(y1,x1,x2))
 ```
 
 #### Model Construction
 ```{r}
-## The regression function in MLRnewbie
-model_nb <- linearRegression(data = testdata, 
-                             predictors = c("x1","x2"),
-                             response = "y1")
+## The regression function in my package
+model_new <- linear_regression(X = testdata[,c(2,3)],
+                              Y = testdata[1])
 cat("")
 ## The base regression function
 model_base <- lm(data=testdata, formula =  y1~x1+x2)
 summary(model_base)
 ```
-#### Regression Correctness and Efficiency
+#### Method Correctness and Efficiency
+Compare the correctness of the code by using 'all.equal' fuction
+Compare the speed of the code by using 'bench:mark()' function:
 ```{r}
-## Due to rounding error in different calculation, we will only save up to 10 digits.
-all.equal(round(model_nb[[1]][,1], digits=10),
+## Aiming to round the error in these two calculations, we will save up to 10 digits to examine the correctness and efficiency.
+all.equal(round(model_new[[1]][,1], digits=10),
           round(model_base$coefficients, digits=10))
 cat("")
-bm <- bench::mark(round(model_nb[[1]][,1], digits=10),
+bm <- bench::mark(round(model_new[[1]][,1], digits=10),
             round(model_base$coefficients, digits=10))
 summary(bm)
-plot(bm)
 ```
+From the results of these two functions, we can find that the method of my package is basically correct and more faster than the existed linear regression function in R, which meets the standard of correctness and efficiency.
 
-#### Comparing Residual Function
-Note that there is no such function in base R, so it is meaning less to compare efficiency.
-Plus, base R does not have a standard residual function and we know that the model is corrected established from the previous code (same MSE). So standard residual should be correct as long as the residuals are the same.
-```{r}
-## Correctness Check
-all.equal(round(model_residuals(model_car)[,3],digits=10), 
-          round(rstandard(model_lm),digits = 10))
-all.equal(round(model_residuals(model_car)[,1],digits=10), 
-          round(model_lm$residuals,digits = 10))
-## Benchmark
-bm2 <- bench::mark(round(model_residuals(model_car)[,3],digits=10),round(rstandard(model_lm),digits = 10))
-summary(bm2)
-plot(bm2)
-```
 
-#### Sum of Square check
-There is no sum function in base R, and my function only read off numbers from the model. So there is no point checking efficiency since its complexity will be O(1).
-```{r}
-## Correctness check
-anova(model_lm)
-anr <- c(sum(anova(model_lm)$"Sum Sq"[-4]),
-         anova(model_lm)$"Sum Sq"[4],
-         anova(model_lm)$"Sum Sq"[4]+sum(anova(model_lm)$"Sum Sq"[-4]))
-ssmr <- unname(ssmodel(model_car)[,1])
-all.equal(anr,ssmr)
-```
+
 
 
 
