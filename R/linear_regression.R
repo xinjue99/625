@@ -11,6 +11,7 @@
 #'@examples
 #'model_car <- linear_regression(X = dt[,c(2,3)],Y = dt$mpg)
 #'
+#'@import bench car tidyr
 #'@export
 #'linear_regression
 

@@ -4,6 +4,8 @@
 # linreg
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/xinjue99/Linear-regression/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/xinjue99/Linear-regression/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of linreg is to analyze the model of linear regression. Linear
